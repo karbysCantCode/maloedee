@@ -1,0 +1,30 @@
+cmake_minimum_required(VERSION "3.20.0")
+
+project(main)
+
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Source/Source/*.cpp")
+
+add_executable(main ${SOURCE_FILES})
+
+target_compile_definitions(main PUBLIC SHADERS="${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders/") # DEVELOPMENT
+#target_compile_definitions(main PUBLIC SHADERS="./Resources/Shaders/") # RELEASE
+
+target_include_directories(main PUBLIC 
+	"${CMAKE_CURRENT_SOURCE_DIR}/Source/"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Source/Source/"
+	"${CMAKE_CURRENT_SOURCE_DIR}/CompiledLibraries/GLEW/include/GL"
+	"${CMAKE_CURRENT_SOURCE_DIR}/CompiledLibraries/GLFW/include/GLFW"
+)
+
+target_link_directories(main PRIVATE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/CompiledLibraries/GLFW/lib-vc2022/"
+	"${CMAKE_CURRENT_SOURCE_DIR}/CompiledLibraries/GLEW/lib/Release/x64/"
+)
+
+add_definitions(-DGLEW_STATIC)
+
+target_link_libraries(main PRIVATE 
+    glfw3
+    glew32s
+    opengl32
+)
