@@ -8,6 +8,7 @@ private:
 	std::vector<Instance*> m_Instances;
 
 public:
+	bool ObjectChanged = false;
 
 	Workspace();
 	~Workspace();

@@ -9,4 +9,5 @@ public:
 	};
 
 	Instance::InstanceType Type;
+	bool changed;
 };
