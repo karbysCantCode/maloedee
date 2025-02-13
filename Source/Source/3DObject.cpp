@@ -16,14 +16,14 @@ ObjectInstance::~ObjectInstance()
 
 void ObjectInstance::setVertexPositionData(const std::vector<float>& vertexPositions) // this will work :)
 {
-	const short FLOATS_IN_POSITION = 3;
-	const short FLOATS_IN_COLOR = 4;
-	const short FLOATS_IN_VERTEX = FLOATS_IN_COLOR + FLOATS_IN_POSITION;
-	const short VERTICES_IN_DATA = vertexPositions.size() / 3;
+	const unsigned int FLOATS_IN_POSITION = 3;
+	const unsigned int FLOATS_IN_COLOR = 4;
+	const unsigned int FLOATS_IN_VERTEX = FLOATS_IN_COLOR + FLOATS_IN_POSITION;
+	const size_t VERTICES_IN_DATA = vertexPositions.size() / 3;
 
 	m_vertexData.resize(FLOATS_IN_VERTEX * VERTICES_IN_DATA);
 
-	for (unsigned int Index = 0; Index < VERTICES_IN_DATA; Index++)
+	for (size_t Index = 0; Index < VERTICES_IN_DATA; Index++)
 	{
 		const float newData[FLOATS_IN_VERTEX] =
 		{
@@ -55,7 +55,7 @@ void ObjectInstance::setColor(const glm::vec4& color)
 
 float* ObjectInstance::getObjectDataAsFloatArray(unsigned int& size)
 {
-	size = m_vertexData.size();
+	size = static_cast<unsigned int>(m_vertexData.size()); // silence c4267 warning by casting
 
 	return &m_vertexData[0];
 }
