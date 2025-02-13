@@ -6,14 +6,13 @@ class Workspace
 {
 private:
 	std::vector<Instance*> m_Instances;
-
+	bool m_ObjectChanged = false;
 public:
-	bool ObjectChanged = false;
 
 	Workspace();
 	~Workspace();
 
-	Instance* New(Instance::InstanceType instanceType);
+	Instance* NewInstance(Instance::InstanceType instanceType);
 	void Destroy(Instance* instance);
 	
 	void Render();

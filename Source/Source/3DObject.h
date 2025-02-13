@@ -7,12 +7,8 @@
 class ObjectInstance : public Instance // attach to instance so different types can be under the same vector
 {
 private:
-	struct VertexPosition
-	{
-		float x, y, z;
-	};
 
-	std::vector<VertexPosition> m_vertexPositions;
+	std::vector<float> m_vertexData;
 	std::vector<unsigned int> m_vertexOrder;
 
 	glm::vec4 m_color{ 1.0f,0.0f,1.0f,1.0f };
@@ -25,9 +21,9 @@ public:
 	ObjectInstance(bool& workspaceChanged);
 	~ObjectInstance();
 
-	void setVertexPositionData(const std::vector<VertexPosition>& vertexPositions);
+	void setVertexPositionData(const std::vector<float>& vertexPositions);
 	void setVertexOrderData(const std::vector<unsigned int>& vertexOrder);
 	void setColor(const glm::vec4& color);
 
-	float* getFloatArrayData();
+	float* getObjectDataAsFloatArray(unsigned int& size);
 };

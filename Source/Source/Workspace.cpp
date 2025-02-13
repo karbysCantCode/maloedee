@@ -8,12 +8,12 @@ Workspace::~Workspace()
 {
 }
 
-Instance* Workspace::New(Instance::InstanceType instanceType)
+Instance* Workspace::NewInstance(Instance::InstanceType instanceType)
 {
 	switch (instanceType)
 	{
 	case Instance::OBJECT:
-		Instance* newInstance = new ObjectInstance();
+		Instance* newInstance = new ObjectInstance(m_ObjectChanged);
 		break;
 	default:
 		break;
@@ -23,8 +23,10 @@ Instance* Workspace::New(Instance::InstanceType instanceType)
 
 void Workspace::Destroy(Instance* instance)
 {
+
 }
 
 void Workspace::Render()
 {
+
 }
