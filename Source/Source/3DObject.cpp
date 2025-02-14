@@ -49,13 +49,19 @@ void ObjectInstance::setVertexOrderData(const std::vector<unsigned int>& vertexO
 void ObjectInstance::setColor(const glm::vec4& color)
 {
 	m_color = color;
+	const unsigned int FLOATS_IN_COLOR = 4;
+	const unsigned int FLOATS_IN_POSITION = 3;
+	const unsigned int FLOATS_IN_VERTEX = 7;
+	const unsigned int VERTICES_IN_DATA = m_vertexData.size() / FLOATS_IN_VERTEX;
+	for (size_t Index = 0; Index < VERTICES_IN_DATA; Index++)
+	{
+		std::memcpy(&m_vertexData[Index * FLOATS_IN_VERTEX + FLOATS_IN_POSITION], &m_color, FLOATS_IN_COLOR * sizeof(float));
+	}
 	p_workspaceChanged = true;
 	changed = true;
 }
 
-float* ObjectInstance::getObjectDataAsFloatArray(unsigned int& size)
+ObjectInstance::VertexDataOrderPair ObjectInstance::getObjectData()
 {
-	size = static_cast<unsigned int>(m_vertexData.size()); // silence c4267 warning by casting
-
-	return &m_vertexData[0];
+	return { m_vertexData, m_vertexOrder };
 }

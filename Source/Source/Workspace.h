@@ -5,7 +5,7 @@
 class Workspace
 {
 private:
-	std::vector<Instance> m_Instances;
+	std::vector<Instance*> m_Instances;
 	std::vector<float> m_VertexData;
 	std::vector<unsigned int> m_VertexOrder;
 	bool m_ObjectChanged = false;

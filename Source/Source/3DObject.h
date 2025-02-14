@@ -16,7 +16,13 @@ private:
 	bool& p_workspaceChanged;
 public:
 	const Instance::InstanceType Type;
-	bool changed = false;
+	bool changed = true;
+
+	struct VertexDataOrderPair
+	{
+		std::vector<float>& vertexData;
+		std::vector<unsigned int>& vertexOrder;
+	};
 
 	ObjectInstance(bool& workspaceChanged);
 	~ObjectInstance();
@@ -25,5 +31,5 @@ public:
 	void setVertexOrderData(const std::vector<unsigned int>& vertexOrder);
 	void setColor(const glm::vec4& color);
 
-	float* getObjectDataAsFloatArray(unsigned int& size);
+	VertexDataOrderPair getObjectData();
 };
