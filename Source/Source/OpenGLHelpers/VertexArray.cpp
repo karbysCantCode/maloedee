@@ -1,16 +1,5 @@
 #include "VertexArray.h"
 
-VertexArray::VertexArray()
-
-{
-	glGenVertexArrays(1, &m_rendererID);
-}
-
-VertexArray::~VertexArray()
-{
-	glDeleteVertexArrays(1, &m_rendererID);
-}
-
 void VertexArray::AddBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout) const// check supported types in VERTEXBUFFERLAYOUT
 {
 	Bind();
@@ -25,14 +14,4 @@ void VertexArray::AddBuffer(const VertexBuffer& vertexBuffer, const VertexBuffer
 		glVertexAttribPointer(i, element.count, element.type, element.normalised, layout.GetStride(), (const void*)offset);
 		offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
 	}
-}
-
-void VertexArray::Bind() const
-{
-	glBindVertexArray(m_rendererID);
-}
-
-void VertexArray::Unbind() const
-{
-	glBindVertexArray(0);
 }

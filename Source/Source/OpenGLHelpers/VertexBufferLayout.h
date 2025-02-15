@@ -75,8 +75,10 @@ public:
 		m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_BYTE);
 	}
 
-
 	inline const std::vector<VertexBufferElement>& GetElements() const { return m_Elements; }
+	
+	// length of all attributes specified, in bytes
 	inline unsigned int GetStride() const { return m_Stride; }
-	inline unsigned int GetNumberOfIndividualElements() const { return m_IndividualElements; }
-};
+
+	// if you did push<float>(4) and push<float>(5), this would return 9, because there are 9 floats (works for any type and multiple types simultaneously)
+	inline unsigned int GetNumberOfIndividualElements() const { return m_IndividualElements; }};

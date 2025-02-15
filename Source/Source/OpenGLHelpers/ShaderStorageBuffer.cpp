@@ -10,21 +10,6 @@ ShaderStorageBuffer::ShaderStorageBuffer(const void* data, unsigned int sizeInBy
 
 }
 
-ShaderStorageBuffer::~ShaderStorageBuffer()
-{
-	glDeleteBuffers(1, &m_rendererID);
-}
-
-void ShaderStorageBuffer::Bind() const
-{
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_rendererID);
-}
-
-void ShaderStorageBuffer::Unbind() const
-{
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-}
-
 void ShaderStorageBuffer::SetBuffer(const void* data, unsigned int sizeInBytes, GLenum GLBufferMode) const //DOES NOT UNBIND BUFFER
 {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_rendererID);

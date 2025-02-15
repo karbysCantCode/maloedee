@@ -10,21 +10,6 @@ VertexBuffer::VertexBuffer(const void* data, unsigned int sizeInBytes, GLenum GL
 
 }
 
-VertexBuffer::~VertexBuffer()
-{
-	glDeleteBuffers(1, &m_rendererID);
-}
-
-void VertexBuffer::Bind() const
-{
-	glBindBuffer(GL_ARRAY_BUFFER, m_rendererID);
-}
-
-void VertexBuffer::Unbind() const
-{
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 void VertexBuffer::SetBuffer(const void* data, unsigned int sizeInBytes, GLenum GLBufferMode) const //DOES NOT UNBIND BUFFER
 {
 	glBindBuffer(GL_ARRAY_BUFFER, m_rendererID);

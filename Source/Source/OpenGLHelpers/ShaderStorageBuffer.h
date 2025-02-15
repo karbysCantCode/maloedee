@@ -8,10 +8,10 @@ private:
 
 public:
 	ShaderStorageBuffer(const void* data, unsigned int sizeInBytes, unsigned int bindingBase, GLenum GLBufferMode);
-	~ShaderStorageBuffer();
+	inline ~ShaderStorageBuffer() { glDeleteBuffers(1, &m_rendererID); }
 
-	void Bind() const;
-	void Unbind() const;
+	inline void Bind() const { glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_rendererID); }
+	inline void Unbind() const { glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); }
 
 	void SetBuffer(const void* data, unsigned int sizeInBytes, GLenum GLBufferMode) const;
 	void UpdateBufferSection(const void* data, unsigned int sizeInBytes, unsigned int offset) const;

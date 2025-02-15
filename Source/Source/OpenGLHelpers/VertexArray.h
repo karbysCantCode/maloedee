@@ -9,11 +9,11 @@ class VertexArray
 private:
 	unsigned int m_rendererID;
 public:
-	VertexArray();
-	~VertexArray();
+	inline VertexArray() { glGenVertexArrays(1, &m_rendererID); }
+	inline ~VertexArray() { glDeleteVertexArrays(1, &m_rendererID); }
 
 	void AddBuffer(const VertexBuffer& vertexBuffer, const VertexBufferLayout& layout)const;
 
-	void Bind() const;
-	void Unbind() const;
+	inline void Bind() const { glBindVertexArray(m_rendererID); }
+	inline void Unbind() const { glBindVertexArray(0); }
 };

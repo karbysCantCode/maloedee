@@ -68,18 +68,18 @@ int main(void)
 
     std::vector<unsigned int> cubeOrder =
     {
-        0,1,3, // bottom
-        1,3,2,
-        4,5,7, // top
-        5,7,6,
-        0,1,4, // left
-        1,4,5,
-        1,2,6, // front
+        1,3,0, // bottom
+        1,2,3,
+        4,7,5, // top
+        7,6,5,
+        1,0,4, // left
+        1,5,4,
+        6,2,1, // front
         1,5,6,
-        3,7,6, // right
+        6,7,3, // right
         3,2,6,
-        3,7,4, // back
-        3,0,4
+        4,0,3, // back
+        3,7,4
 
     };
 

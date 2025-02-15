@@ -20,11 +20,11 @@ ObjectInstance::~ObjectInstance()
 void ObjectInstance::SetVertexPositionData(const std::vector<float>& vertexPositions) // this will work :)
 {
 
-	const unsigned int FLOATS_IN_POSITION = 3;
-	const unsigned int FLOATS_IN_COLOR = 4;
-	const unsigned int UINT32_IN_MODEL_ID = 1;
-	const unsigned int FLOATS_IN_VERTEX = FLOATS_IN_COLOR + FLOATS_IN_POSITION + UINT32_IN_MODEL_ID;
-	const unsigned int UINT32_IN_VERTEX = UINT32_IN_MODEL_ID;
+	constexpr unsigned int FLOATS_IN_POSITION = 3;
+	constexpr unsigned int FLOATS_IN_COLOR = 4;
+	constexpr unsigned int UINT32_IN_MODEL_ID = 1;
+	constexpr unsigned int FLOATS_IN_VERTEX = FLOATS_IN_COLOR + FLOATS_IN_POSITION + UINT32_IN_MODEL_ID;
+	constexpr unsigned int UINT32_IN_VERTEX = UINT32_IN_MODEL_ID;
 	const size_t VERTICES_IN_DATA = vertexPositions.size() / FLOATS_IN_POSITION;
 
 	if (VERTICES_IN_DATA != m_vertexData.size()) { p_workspaceRecompile = true; }
@@ -67,10 +67,10 @@ void ObjectInstance::SetVertexOrderData(const std::vector<unsigned int>& vertexO
 void ObjectInstance::SetColor(const glm::vec4& color)
 {
 	m_color = color;
-	const unsigned int FLOATS_IN_COLOR = 4;
-	const unsigned int FLOATS_IN_POSITION = 3;
-	const unsigned int UINT32_IN_MODEL_ID = 1;
-	const unsigned int FLOATS_IN_VERTEX = FLOATS_IN_COLOR + FLOATS_IN_POSITION + UINT32_IN_MODEL_ID;
+	constexpr unsigned int FLOATS_IN_COLOR = 4;
+	constexpr unsigned int FLOATS_IN_POSITION = 3;
+	constexpr unsigned int UINT32_IN_MODEL_ID = 1;
+	constexpr unsigned int FLOATS_IN_VERTEX = FLOATS_IN_COLOR + FLOATS_IN_POSITION + UINT32_IN_MODEL_ID;
 	const unsigned int VERTICES_IN_DATA = m_vertexData.size() / FLOATS_IN_VERTEX;
 	for (size_t Index = 0; Index < VERTICES_IN_DATA; Index++)
 	{
