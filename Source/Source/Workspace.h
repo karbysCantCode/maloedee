@@ -23,7 +23,7 @@ private:
 	std::unordered_map<uint32_t, unsigned int> m_ObjectIDFirstDataEntry;
 	std::vector<unsigned int> m_VertexOrder;
 	std::unordered_map<uint32_t, unsigned int> m_ObjectIDFirstOrderEntry;
-	std::vector<glm::vec4> m_ObjectPositions;
+	std::vector<float> m_SSBOData;
 	unsigned int m_NextFree3DObjectID = 0;
 	bool m_ObjectChanged = false;
 	bool m_RecompileObjectData = false;

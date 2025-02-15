@@ -30,8 +30,18 @@ public:
 
 	void SetVertexPositionData(const std::vector<float>& vertexPositions);
 	void SetVertexOrderData(const std::vector<unsigned int>& vertexOrder);
-	void SetColor(const glm::vec4& color);
-	void SetPosition(const glm::vec3& postion);
+
+	inline void SetColor(const glm::vec4& color) { 
+		m_color = color; 
+		SSBOUpdate = true; 
+		p_workspaceChanged = true; 
+	};
+
+	inline void SetPosition(const glm::vec3& position) {
+		m_Position = position;
+		SSBOUpdate = true;
+		p_workspaceChanged = true;
+	};
 
 	inline glm::vec4 GetColor() const { return m_color; }
 	inline const glm::vec3& GetPosition() const { return m_Position; }

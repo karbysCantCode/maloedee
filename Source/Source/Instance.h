@@ -10,7 +10,7 @@ public:
 
 	Instance::InstanceType Type;
 	bool Changed = true;
-	bool PositionChanged = false;
+	bool SSBOUpdate = false;
 
 	virtual ~Instance() {}
 };

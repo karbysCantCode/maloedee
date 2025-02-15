@@ -4,6 +4,14 @@
 #include <algorithm> // for index buffer index offset
 #include <unordered_map>
 
+namespace workspaceConst
+{
+	// IF CHANGE, UPDATE CODE IN RECOMPILE3DDATA AND CHANGE THE VERTEX SHADER TO TAKE FLOATS_IN_SSBO_ENTRY NUMBER OF FLOATS IN THE MODEL INDEX CONST
+	constexpr unsigned int FLOATS_IN_POSITION = 3;
+	constexpr unsigned int FLOATS_IN_COLOR = 4;
+	constexpr unsigned int FLOATS_IN_SSBO_ENTRY = FLOATS_IN_POSITION + FLOATS_IN_COLOR;
+}
+
 Workspace::Workspace(const float ScreenWidth, const float ScreenHeight)
 	: m_ScreenWidth(ScreenWidth)
 	, m_ScreenHeight(ScreenHeight)
@@ -19,15 +27,20 @@ Workspace::Workspace(const float ScreenWidth, const float ScreenHeight)
 	, m_Projection(glm::perspective(glm::radians(90.0f), ScreenWidth / ScreenHeight, 0.1f, 1000.0f))
 {
 	m_VertexBufferLayout.Push<float>(3); // position floats
-	m_VertexBufferLayout.Push<float>(4); // color floats
+	//m_VertexBufferLayout.Push<float>(4); // color floats
 	m_VertexBufferLayout.Push<float>(1); // model ID THE FUCKING EVIL LINE BRO WHY DOES IT CAST THE VALUE, I THOUGHT IT WOULD JUST TELL HOW TO INTERPRET
 	m_VertexArray.AddBuffer(*m_VertexBuffer, m_VertexBufferLayout);
+
+	m_ShaderStorageBuffer->Push<float>(workspaceConst::FLOATS_IN_POSITION); // position floats
+	m_ShaderStorageBuffer->Push<float>(workspaceConst::FLOATS_IN_COLOR); // color floats
 
 	glAttachShader(m_Program, m_VertexShader.shaderID);
 	glAttachShader(m_Program, m_FragmentShader.shaderID);
 	glLinkProgram(m_Program);
 	glValidateProgram(m_Program);
 	glUseProgram(m_Program);
+	glDeleteShader(m_VertexShader.shaderID);
+	glDeleteShader(m_FragmentShader.shaderID);
 
 	m_UniformHelper.BindProgram(m_Program);
 	m_UniformHelper.SetUniformMat4f("u_Projection", m_Projection);
@@ -39,6 +52,9 @@ Workspace::Workspace(const float ScreenWidth, const float ScreenHeight)
 
 Workspace::~Workspace()
 {
+	delete m_IndexBuffer;
+	delete m_VertexBuffer;
+	delete m_ShaderStorageBuffer;
 }
 
 void Workspace::Recompile3DInstanceData() // recompile on gpu?
@@ -46,15 +62,15 @@ void Workspace::Recompile3DInstanceData() // recompile on gpu?
 	std::cout << "recompiling" << std::endl;
 	m_VertexData.resize(0);
 	m_VertexOrder.resize(0);
-	m_ObjectPositions.resize(0);
-	m_NextFree3DObjectID = m_3DInstances.size();
+	const unsigned int objectCount = m_3DInstances.size();
+	m_SSBOData.resize(workspaceConst::FLOATS_IN_SSBO_ENTRY* objectCount);
 
-	for (unsigned int Index = 0; Index < m_3DInstances.size(); Index++) // do a loop to resize only once?
+	for (unsigned int Index = 0; Index < objectCount; Index++) // do a loop to resize only once?
 	{
 		std::cout << "CURRENT INDEX:" << Index << std::endl;
 		Instance* instanceInstance = m_3DInstances[Index];
 		instanceInstance->Changed = false;
-		instanceInstance->PositionChanged = false;
+		instanceInstance->SSBOUpdate = false;
 
 		ObjectInstance* objInstance = static_cast<ObjectInstance*>(instanceInstance);
 		objInstance->ObjectID = Index;
@@ -76,12 +92,34 @@ void Workspace::Recompile3DInstanceData() // recompile on gpu?
 			[VERTICIES_IN_DATA](int x) { return x + VERTICIES_IN_DATA; });
 		m_VertexOrder.insert(m_VertexOrder.end(), newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end());
 
-		m_ObjectPositions.push_back(glm::vec4(objInstance->GetPosition(),1.0f));
-	}
+		// SSBO ASSIGNING
 
+		const glm::vec3 objPosition = objInstance->GetPosition();
+		const glm::vec4 objColor = objInstance->GetColor();
+
+		const float SSBO_DATA[workspaceConst::FLOATS_IN_SSBO_ENTRY] =
+		{
+			objPosition.x,
+			objPosition.y,
+			objPosition.z,
+
+			objColor.r,
+			objColor.g,
+			objColor.b,
+			objColor.a
+		};
+
+		for (int i = 0; i < 7; i++) {
+			std::cout << SSBO_DATA[i] << " ";
+		}
+		std::cout << std::endl;
+
+		std::memcpy(&m_SSBOData[Index* workspaceConst::FLOATS_IN_SSBO_ENTRY], SSBO_DATA, workspaceConst::FLOATS_IN_SSBO_ENTRY * sizeof(float));
+	}
+	SpillVectorContentsGently<float>(m_SSBOData, 7);
 	m_VertexBuffer->SetBuffer(m_VertexData.data(), m_VertexData.size() * (m_VertexBufferLayout.GetStride() / m_VertexBufferLayout.GetNumberOfIndividualElements()), GL_DYNAMIC_DRAW);
 	m_IndexBuffer->SetBuffer(m_VertexOrder.data(), m_VertexOrder.size(), GL_DYNAMIC_DRAW);
-	m_ShaderStorageBuffer->SetBuffer(m_ObjectPositions.data(), m_ObjectPositions.size() * sizeof(glm::vec4), GL_DYNAMIC_DRAW);
+	m_ShaderStorageBuffer->SetBuffer(m_SSBOData.data(), m_SSBOData.size() * sizeof(float), GL_DYNAMIC_DRAW);
 }
 
 
@@ -140,7 +178,11 @@ Instance* Workspace::NewInstance(Instance::InstanceType instanceType) // thiss l
 
 void Workspace::Destroy(Instance* instance)
 {
-	delete instance;
+	auto it = std::find(m_3DInstances.begin(), m_3DInstances.end(), instance);
+	if (it != m_3DInstances.end()) {
+		m_3DInstances.erase(it);  // Remove the pointer from vector
+		delete instance;       // Free memory
+	}
 	Recompile3DInstanceData();
 }
 
@@ -178,12 +220,27 @@ void Workspace::Update()
 					std::memcpy(&m_VertexOrder[firstEntryIndex], newObjectData.vertexOrder.data(), newObjectData.vertexOrder.size() * sizeof(unsigned int));
 				}
 
-				if (object->PositionChanged)
+				if (obj->SSBOUpdate)
 				{
-					object->PositionChanged = false;
+					obj->SSBOUpdate = false;
 					std::cout << "theoretically updating the shader storage :shrug:" << std::endl;
-					const glm::vec4 position(obj->GetPosition(),1.0f);
-					m_ShaderStorageBuffer->UpdateBufferSection(&position, sizeof(glm::vec4), sizeof(glm::vec4) * obj->ObjectID);
+					const glm::vec3 objPosition = obj->GetPosition();
+					const glm::vec4 objColor = obj->GetColor();
+
+					const float SSBO_DATA[workspaceConst::FLOATS_IN_SSBO_ENTRY] =
+					{
+						objPosition.x,
+						objPosition.y,
+						objPosition.z,
+
+						objColor.r,
+						objColor.g,
+						objColor.b,
+						objColor.a
+					};
+
+					constexpr unsigned int SSBO_ENTRY_IN_BYTES = workspaceConst::FLOATS_IN_SSBO_ENTRY * sizeof(float);
+					m_ShaderStorageBuffer->UpdateBufferSection(&SSBO_DATA, SSBO_ENTRY_IN_BYTES, SSBO_ENTRY_IN_BYTES * obj->ObjectID);
 					GLAssertError();
 				}
 			}
