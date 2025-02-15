@@ -11,4 +11,6 @@ public:
 	Instance::InstanceType Type;
 	bool Changed = true;
 	bool PositionChanged = false;
+
+	virtual ~Instance() {}
 };

@@ -17,7 +17,7 @@ private:
 	bool& p_workspaceChanged;
 	bool& p_workspaceRecompile;
 public:
-	uint32_t ObjectID = 0; // dont change this you silly donkey
+	uint32_t ObjectID; // dont change this you silly donkey
 
 	struct VertexDataOrderPair
 	{
@@ -25,7 +25,7 @@ public:
 		std::vector<unsigned int>& vertexOrder;
 	};
 
-	ObjectInstance(bool& workspaceChanged, bool& workspaceRecompile);
+	ObjectInstance(bool& workspaceChanged, bool& workspaceRecompile, uint32_t objectID);
 	~ObjectInstance();
 
 	void SetVertexPositionData(const std::vector<float>& vertexPositions);

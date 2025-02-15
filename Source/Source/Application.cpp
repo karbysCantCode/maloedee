@@ -58,34 +58,41 @@ int main(void)
     {
         -50.0f, -50.0f, -50.0f,
          50.0f, -50.0f, -50.0f,
-         50.0f,  50.0f, -50.0f,
-        -50.0f,  50.0f, -50.0f,
-        -50.0f, -50.0f,  50.0f,
          50.0f, -50.0f,  50.0f,
+        -50.0f, -50.0f,  50.0f,
+        -50.0f,  50.0f, -50.0f,
+         50.0f,  50.0f, -50.0f,
          50.0f,  50.0f,  50.0f,
         -50.0f,  50.0f,  50.0f
     };
 
     std::vector<unsigned int> cubeOrder =
     {
-        0,1,2, // bottom
-        0,2,3,
-        4,5,6, // top
-        4,6,7,
+        0,1,3, // bottom
+        1,3,2,
+        4,5,7, // top
+        5,7,6,
         0,1,4, // left
         1,4,5,
         1,2,6, // front
         1,5,6,
-        2,3,7, // right
-        2,6,7,
-        3,0,4, // back
-        3,7,4
+        3,7,6, // right
+        3,2,6,
+        3,7,4, // back
+        3,0,4
 
     };
 
     ObjectInstance* cubeA = static_cast<ObjectInstance*>(workspace.NewInstance(Instance::InstanceType::OBJECT));
     cubeA->SetVertexPositionData(cubeVertices);
     cubeA->SetVertexOrderData(cubeOrder);
+
+    ObjectInstance* cubeB = static_cast<ObjectInstance*>(workspace.NewInstance(Instance::InstanceType::OBJECT));
+    cubeB->SetVertexPositionData(cubeVertices);
+    cubeB->SetVertexOrderData(cubeOrder);
+
+    glm::vec3 cubeAPosition(0);
+    glm::vec3 cubeBPosition(0);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -95,6 +102,19 @@ int main(void)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        {
+            if (ImGui::SliderFloat3("Cube A", &cubeAPosition[0], -400.0f, 400.0f))
+            {
+                cubeA->SetPosition(cubeAPosition);
+                std::cout << cubeA->ObjectID << ":ID CUBE A" << std::endl;
+            }
+            if (ImGui::SliderFloat3("Cube B", &cubeBPosition[0], -400.0f, 400.0f))
+            {
+                cubeB->SetPosition(cubeBPosition);
+                std::cout << cubeA->ObjectID << ":ID CUBE B" << std::endl;
+            }
+        }
 
         workspace.Update();
         workspace.Render();

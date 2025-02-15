@@ -35,7 +35,7 @@ private:
 	unsigned int m_IndividualElements;
 public:
 	VertexBufferLayout()
-		: m_Stride(0) {}
+		: m_Stride(0), m_IndividualElements(0) {}
 
 	template<typename T>
 	void Push(unsigned int count)

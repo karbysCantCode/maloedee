@@ -4,9 +4,10 @@
 #include <cstdint>
 #include <bit>
 
-ObjectInstance::ObjectInstance(bool& workspaceChanged, bool& workspaceRecompile)
+ObjectInstance::ObjectInstance(bool& workspaceChanged, bool& workspaceRecompile, uint32_t objectID)
 	: p_workspaceChanged(workspaceChanged)
 	, p_workspaceRecompile(workspaceRecompile)
+	, ObjectID(objectID)
 {
 	Type = Instance::InstanceType::OBJECT;
 }
@@ -24,7 +25,7 @@ void ObjectInstance::SetVertexPositionData(const std::vector<float>& vertexPosit
 	const unsigned int UINT32_IN_MODEL_ID = 1;
 	const unsigned int FLOATS_IN_VERTEX = FLOATS_IN_COLOR + FLOATS_IN_POSITION + UINT32_IN_MODEL_ID;
 	const unsigned int UINT32_IN_VERTEX = UINT32_IN_MODEL_ID;
-	const size_t VERTICES_IN_DATA = vertexPositions.size() / 3;
+	const size_t VERTICES_IN_DATA = vertexPositions.size() / FLOATS_IN_POSITION;
 
 	if (VERTICES_IN_DATA != m_vertexData.size()) { p_workspaceRecompile = true; }
 
@@ -32,10 +33,18 @@ void ObjectInstance::SetVertexPositionData(const std::vector<float>& vertexPosit
 
 	for (size_t Index = 0; Index < VERTICES_IN_DATA; Index++)
 	{
+		const unsigned int INDEX_MUL_FIP = Index * FLOATS_IN_POSITION;
 		const float newData[FLOATS_IN_VERTEX] =
 		{
-			vertexPositions[Index],vertexPositions[Index + 1],vertexPositions[Index + 2],
-			m_color[0], m_color[1], m_color[2], m_color[3],
+			vertexPositions[INDEX_MUL_FIP],
+			vertexPositions[INDEX_MUL_FIP + 1],
+			vertexPositions[INDEX_MUL_FIP + 2],
+
+			m_color[0], 
+			m_color[1], 
+			m_color[2], 
+			m_color[3],
+
 			std::_Bit_cast<float>(ObjectID) // so uint32 will exist in a float array -  does NOT change the value, simply casts the type to a float, doesnt change bit data
 		};
 

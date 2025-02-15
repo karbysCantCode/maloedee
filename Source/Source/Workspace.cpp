@@ -31,7 +31,9 @@ Workspace::Workspace(const float ScreenWidth, const float ScreenHeight)
 
 	m_UniformHelper.BindProgram(m_Program);
 	m_UniformHelper.SetUniformMat4f("u_Projection", m_Projection);
-	m_UniformHelper.SetUniformMat4f("u_View", glm::mat4(0.0f));
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -1000.0f));
+	m_UniformHelper.SetUniformMat4f("u_View", view);
 	glUseProgram(0);
 }
 
@@ -45,8 +47,6 @@ void Workspace::Recompile3DInstanceData() // recompile on gpu?
 	m_VertexOrder.resize(0);
 	m_ObjectPositions.resize(0);
 
-	unsigned int totalVertexCount = 0;
-
 	for (unsigned int Index = 0; Index < m_3DInstances.size(); Index++) // do a loop to resize only once?
 	{
 		Instance* instanceInstance = m_3DInstances[Index];
@@ -56,46 +56,29 @@ void Workspace::Recompile3DInstanceData() // recompile on gpu?
 		ObjectInstance* objInstance = static_cast<ObjectInstance*>(instanceInstance);
 		objInstance->ObjectID = Index;
 
-		m_ObjectIDFirstDataEntry[Index] = m_VertexData.size();
+		const unsigned int VERTEX_DATA_ENTRIES = m_VertexData.size();
+		m_ObjectIDFirstDataEntry[Index] = VERTEX_DATA_ENTRIES;
 		m_ObjectIDFirstOrderEntry[Index] = m_VertexOrder.size();
 
 		ObjectInstance::VertexDataOrderPair newObjectData = objInstance->GetObjectData();
 
 		//m_VertexData.resize(m_VertexData.size() + newObjectData.vertexData.size()); // dont need resize for insert, insert does it itself
 
-
 		m_VertexData.insert(m_VertexData.end(), newObjectData.vertexData.begin(), newObjectData.vertexData.end());
 
 
-		const unsigned int VERTEX_ORDER_ARRAY_SIZE = m_VertexOrder.size();
+		const unsigned int VERTICIES_IN_DATA = VERTEX_DATA_ENTRIES / m_VertexBufferLayout.GetNumberOfIndividualElements();
+
 		std::transform(newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end(), newObjectData.vertexOrder.begin(),
-			[VERTEX_ORDER_ARRAY_SIZE](int x) { return x + VERTEX_ORDER_ARRAY_SIZE; });
+			[VERTICIES_IN_DATA](int x) { return x + VERTICIES_IN_DATA; });
 		m_VertexOrder.insert(m_VertexOrder.end(), newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end());
 
-		m_ObjectPositions.push_back(objInstance->GetPosition());
+		m_ObjectPositions.push_back(glm::vec4(objInstance->GetPosition(),1.0f));
 	}
-	std::cout << m_VertexData.size() << std::endl;
-	std::cout << m_VertexOrder.size() << std::endl;
-	std::cout << m_ObjectPositions.size() << std::endl;
-	std::cout << m_3DInstances.size() << std::endl;
-	std::cout << m_VertexData.size() * (m_VertexBufferLayout.GetStride() / m_VertexBufferLayout.GetNumberOfIndividualElements()) << std::endl;
-	std::cout << m_VertexBufferLayout.GetStride() << std::endl;
-	std::cout << m_VertexBufferLayout.GetNumberOfIndividualElements() << std::endl;
-	//const void* start = m_VertexData.data();
-	//for (int i = 0; i < m_VertexData.size(); i++)
-	//{
-	//	if (i % 8 == 0 && i != 0)
-	//	{
-	//		std::cout << std::endl;
-	//	}
-	//	std::cout << *(float*)start << " ";
-	//	const uint8_t* bytePtr = static_cast<const uint8_t*>(start);
-	//	bytePtr += 4;  // Increment by 1 byte
-	//	start = bytePtr;
-	//}
+
 	m_VertexBuffer->SetBuffer(m_VertexData.data(), m_VertexData.size() * (m_VertexBufferLayout.GetStride() / m_VertexBufferLayout.GetNumberOfIndividualElements()), GL_DYNAMIC_DRAW);
 	m_IndexBuffer->SetBuffer(m_VertexOrder.data(), m_VertexOrder.size(), GL_DYNAMIC_DRAW);
-	m_ShaderStorageBuffer->SetBuffer(m_ObjectPositions.data(), m_ObjectPositions.size() * sizeof(glm::vec3), GL_DYNAMIC_DRAW);
+	m_ShaderStorageBuffer->SetBuffer(m_ObjectPositions.data(), m_ObjectPositions.size() * sizeof(glm::vec4), GL_DYNAMIC_DRAW);
 }
 
 
@@ -107,36 +90,37 @@ Instance* Workspace::NewInstance(Instance::InstanceType instanceType) // thiss l
 	{
 	case Instance::OBJECT:
 	{
-		newInstance = new ObjectInstance(m_ObjectChanged, m_RecompileObjectData);
+		newInstance = new ObjectInstance(m_ObjectChanged, m_RecompileObjectData, m_3DInstances.size());
 		m_3DInstances.push_back(newInstance);
+		
 		m_RecompileObjectData = true;
 
 		//ObjectInstance* object = static_cast<ObjectInstance*>(newInstance);
 		//object->ObjectID = m_3DInstances.size();
-
+		//
 		//m_3DInstances.push_back(static_cast<ObjectInstance*>(newInstance));
-
+		//
 		//m_ObjectIDFirstDataEntry[object->ObjectID] = m_VertexData.size();
 		//m_ObjectIDFirstOrderEntry[object->ObjectID] = m_VertexOrder.size();
-
+		//
 		//// adding new vertex data
-
+		//
 		//ObjectInstance::VertexDataOrderPair newObjectData = object->GetObjectData();
 		//m_VertexData.resize(m_VertexData.size() + newObjectData.vertexData.size());
-
+		//
 		//m_VertexData.insert(m_VertexData.end()
 		//	, newObjectData.vertexData.begin(), newObjectData.vertexData.end());
-
+		//
 		//// adding new order data
-
+		//
 		//const unsigned int VERTEX_ORDER_ARRAY_SIZE = m_VertexOrder.size(); // apply offset on gpu for large assets?
-
+		//
 		//std::transform(newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end(), newObjectData.vertexOrder.begin(),
 		//	[VERTEX_ORDER_ARRAY_SIZE](int x) { return x + VERTEX_ORDER_ARRAY_SIZE; });
-
+		//
 		//m_VertexOrder.insert(m_VertexOrder.end()
 		//	, newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end());
-
+		//
 		// dont think i need the above? it does the same operations on cpu arrays as recompiling does, but it doesnt write to buffers, so recompiling would work better?
 	}
 	break;
@@ -160,62 +144,48 @@ void Workspace::Update()
 {
 	if (m_RecompileObjectData)
 	{
+		std::cout << "recompile" << std::endl;
 		m_RecompileObjectData = false;
 		Recompile3DInstanceData();
 	}
 	else if (m_ObjectChanged)
 	{
+		std::cout << "obj update" << std::endl;
 		m_ObjectChanged = false;
 		for (const auto& object : m_3DInstances)
 		{
-			if (!object->Changed) { continue; }
-			object->Changed = false;
-			switch (object->Type)
-			{
-
-			case Instance::InstanceType::OBJECT:
+			if (typeid(*object) == typeid(ObjectInstance))
 			{
 				ObjectInstance* obj = static_cast<ObjectInstance*>(object);
+				std::cout << obj->Changed << std::endl;
+				if (obj->Changed) 
+				{
+					obj->Changed = false;
 
+					ObjectInstance::VertexDataOrderPair newObjectData = obj->GetObjectData();
 
-				ObjectInstance::VertexDataOrderPair newObjectData = obj->GetObjectData();
+					std::memcpy(&m_VertexData[m_ObjectIDFirstDataEntry[obj->ObjectID]], newObjectData.vertexData.data(), newObjectData.vertexData.size() * m_VertexBufferLayout.GetStride());
 
-				std::memcpy(&m_VertexData[m_ObjectIDFirstDataEntry[obj->ObjectID]], newObjectData.vertexData.data(), newObjectData.vertexData.size());
+					const unsigned int firstEntryIndex = m_ObjectIDFirstOrderEntry[obj->ObjectID];// apply offset on gpu for large assets?
 
-				const unsigned int firstEntryIndex = m_ObjectIDFirstOrderEntry[obj->ObjectID];// apply offset on gpu for large assets?
+					std::transform(newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end(), newObjectData.vertexOrder.begin(),
+						[firstEntryIndex](int x) { return x + firstEntryIndex; });
 
-				std::transform(newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end(), newObjectData.vertexOrder.begin(),
-					[firstEntryIndex](int x) { return x + firstEntryIndex; });
+					std::memcpy(&m_VertexOrder[firstEntryIndex], newObjectData.vertexOrder.data(), newObjectData.vertexOrder.size() * sizeof(unsigned int));
+				}
 
-				std::memcpy(&m_VertexOrder[firstEntryIndex], newObjectData.vertexOrder.data(), newObjectData.vertexOrder.size());
+				if (object->PositionChanged)
+				{
+					object->PositionChanged = false;
+					std::cout << "theoretically updating the shader storage :shrug:" << std::endl;
+					const glm::vec4 position(obj->GetPosition(), 1.0f);
+					m_ShaderStorageBuffer->UpdateBufferSection(&position, sizeof(glm::vec4), sizeof(glm::vec4) * obj->ObjectID);
+					GLAssertError();
+				}
 			}
-			break;
-
-			default:
-				break;
-			}
-
-
-			
-
-
-			if (object->PositionChanged)
+			else
 			{
-				object->PositionChanged = false;
-				switch (object->Type)
-				{
-
-				case Instance::InstanceType::OBJECT:
-				{
-					ObjectInstance* obj = static_cast<ObjectInstance*>(object);
-
-					m_ShaderStorageBuffer->UpdateBufferSection(&obj->GetPosition(), sizeof(glm::vec3), sizeof(glm::vec3) * obj->ObjectID);
-				}
-				break;
-
-				default:
-					break;
-				}
+				assert(false);
 			}
 		}
 	}
