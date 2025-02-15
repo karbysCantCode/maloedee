@@ -2,7 +2,7 @@
 
 layout(std430, binding = 0) buffer SSBO 
 {
-    vec4 modelPositions[];
+    vec3 modelPositions[];
 };
 
 layout(location = 0) in vec3 position;
@@ -20,7 +20,7 @@ void main()
     vec4(1.0, 0.0, 0.0, 0.0),
     vec4(0.0, 1.0, 0.0, 0.0),
     vec4(0.0, 0.0, 1.0, 0.0),
-    modelPositions[modelID]
+    vec4(modelPositions[modelID], 1.0)
     );
 	gl_Position =  u_Projection * u_View * modelTranslation * vec4(position,1.0);
 	fragColor = color;

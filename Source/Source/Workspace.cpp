@@ -73,12 +73,12 @@ void Workspace::Recompile3DInstanceData() // recompile on gpu?
 			[VERTICIES_IN_DATA](int x) { return x + VERTICIES_IN_DATA; });
 		m_VertexOrder.insert(m_VertexOrder.end(), newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end());
 
-		m_ObjectPositions.push_back(glm::vec4(objInstance->GetPosition(),1.0f));
+		m_ObjectPositions.push_back(objInstance->GetPosition());
 	}
 
 	m_VertexBuffer->SetBuffer(m_VertexData.data(), m_VertexData.size() * (m_VertexBufferLayout.GetStride() / m_VertexBufferLayout.GetNumberOfIndividualElements()), GL_DYNAMIC_DRAW);
 	m_IndexBuffer->SetBuffer(m_VertexOrder.data(), m_VertexOrder.size(), GL_DYNAMIC_DRAW);
-	m_ShaderStorageBuffer->SetBuffer(m_ObjectPositions.data(), m_ObjectPositions.size() * sizeof(glm::vec4), GL_DYNAMIC_DRAW);
+	m_ShaderStorageBuffer->SetBuffer(m_ObjectPositions.data(), m_ObjectPositions.size() * sizeof(glm::vec3), GL_DYNAMIC_DRAW);
 }
 
 
@@ -178,8 +178,8 @@ void Workspace::Update()
 				{
 					object->PositionChanged = false;
 					std::cout << "theoretically updating the shader storage :shrug:" << std::endl;
-					const glm::vec4 position(obj->GetPosition(), 1.0f);
-					m_ShaderStorageBuffer->UpdateBufferSection(&position, sizeof(glm::vec4), sizeof(glm::vec4) * obj->ObjectID);
+					const glm::vec3 position(obj->GetPosition());
+					m_ShaderStorageBuffer->UpdateBufferSection(&position, sizeof(glm::vec3), sizeof(glm::vec3) * obj->ObjectID);
 					GLAssertError();
 				}
 			}
