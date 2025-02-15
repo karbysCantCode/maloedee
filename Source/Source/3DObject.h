@@ -12,11 +12,12 @@ private:
 	std::vector<unsigned int> m_vertexOrder;
 
 	glm::vec4 m_color{ 1.0f,0.0f,1.0f,1.0f };
+	glm::vec3 m_Position{ 0.0f, 0.0f, 0.0f };
 
 	bool& p_workspaceChanged;
+	bool& p_workspaceRecompile;
 public:
-	const Instance::InstanceType Type;
-	bool changed = true;
+	uint32_t ObjectID = 0; // dont change this you silly donkey
 
 	struct VertexDataOrderPair
 	{
@@ -24,12 +25,16 @@ public:
 		std::vector<unsigned int>& vertexOrder;
 	};
 
-	ObjectInstance(bool& workspaceChanged);
+	ObjectInstance(bool& workspaceChanged, bool& workspaceRecompile);
 	~ObjectInstance();
 
-	void setVertexPositionData(const std::vector<float>& vertexPositions);
-	void setVertexOrderData(const std::vector<unsigned int>& vertexOrder);
-	void setColor(const glm::vec4& color);
+	void SetVertexPositionData(const std::vector<float>& vertexPositions);
+	void SetVertexOrderData(const std::vector<unsigned int>& vertexOrder);
+	void SetColor(const glm::vec4& color);
+	void SetPosition(const glm::vec3& postion);
 
-	VertexDataOrderPair getObjectData();
+	inline glm::vec4 GetColor() const { return m_color; }
+	inline const glm::vec3& GetPosition() const { return m_Position; }
+
+	VertexDataOrderPair GetObjectData();
 };

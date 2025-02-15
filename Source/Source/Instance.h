@@ -9,5 +9,6 @@ public:
 	};
 
 	Instance::InstanceType Type;
-	bool changed;
+	bool Changed = true;
+	bool PositionChanged = false;
 };
