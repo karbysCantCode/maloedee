@@ -112,7 +112,7 @@ int main(void)
             if (ImGui::SliderFloat3("Cube B", &cubeBPosition[0], -400.0f, 400.0f))
             {
                 cubeB->SetPosition(cubeBPosition);
-                std::cout << cubeA->ObjectID << ":ID CUBE B" << std::endl;
+                std::cout << cubeB->ObjectID << ":ID CUBE B" << std::endl;
             }
         }
 

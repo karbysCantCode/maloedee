@@ -20,7 +20,7 @@ Workspace::Workspace(const float ScreenWidth, const float ScreenHeight)
 {
 	m_VertexBufferLayout.Push<float>(3); // position floats
 	m_VertexBufferLayout.Push<float>(4); // color floats
-	m_VertexBufferLayout.Push<unsigned int>(1); // model ID
+	m_VertexBufferLayout.Push<float>(1); // model ID THE FUCKING EVIL LINE BRO WHY DOES IT CAST THE VALUE, I THOUGHT IT WOULD JUST TELL HOW TO INTERPRET
 	m_VertexArray.AddBuffer(*m_VertexBuffer, m_VertexBufferLayout);
 
 	glAttachShader(m_Program, m_VertexShader.shaderID);
@@ -43,12 +43,15 @@ Workspace::~Workspace()
 
 void Workspace::Recompile3DInstanceData() // recompile on gpu?
 {
+	std::cout << "recompiling" << std::endl;
 	m_VertexData.resize(0);
 	m_VertexOrder.resize(0);
 	m_ObjectPositions.resize(0);
+	m_NextFree3DObjectID = m_3DInstances.size();
 
 	for (unsigned int Index = 0; Index < m_3DInstances.size(); Index++) // do a loop to resize only once?
 	{
+		std::cout << "CURRENT INDEX:" << Index << std::endl;
 		Instance* instanceInstance = m_3DInstances[Index];
 		instanceInstance->Changed = false;
 		instanceInstance->PositionChanged = false;
@@ -73,12 +76,12 @@ void Workspace::Recompile3DInstanceData() // recompile on gpu?
 			[VERTICIES_IN_DATA](int x) { return x + VERTICIES_IN_DATA; });
 		m_VertexOrder.insert(m_VertexOrder.end(), newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end());
 
-		m_ObjectPositions.push_back(objInstance->GetPosition());
+		m_ObjectPositions.push_back(glm::vec4(objInstance->GetPosition(),1.0f));
 	}
 
 	m_VertexBuffer->SetBuffer(m_VertexData.data(), m_VertexData.size() * (m_VertexBufferLayout.GetStride() / m_VertexBufferLayout.GetNumberOfIndividualElements()), GL_DYNAMIC_DRAW);
 	m_IndexBuffer->SetBuffer(m_VertexOrder.data(), m_VertexOrder.size(), GL_DYNAMIC_DRAW);
-	m_ShaderStorageBuffer->SetBuffer(m_ObjectPositions.data(), m_ObjectPositions.size() * sizeof(glm::vec3), GL_DYNAMIC_DRAW);
+	m_ShaderStorageBuffer->SetBuffer(m_ObjectPositions.data(), m_ObjectPositions.size() * sizeof(glm::vec4), GL_DYNAMIC_DRAW);
 }
 
 
@@ -90,9 +93,10 @@ Instance* Workspace::NewInstance(Instance::InstanceType instanceType) // thiss l
 	{
 	case Instance::OBJECT:
 	{
-		newInstance = new ObjectInstance(m_ObjectChanged, m_RecompileObjectData, m_3DInstances.size());
+		newInstance = new ObjectInstance(m_ObjectChanged, m_RecompileObjectData, m_NextFree3DObjectID);
 		m_3DInstances.push_back(newInstance);
-		
+		std::cout << "next free id: " << m_NextFree3DObjectID << std::endl;
+		m_NextFree3DObjectID++;
 		m_RecompileObjectData = true;
 
 		//ObjectInstance* object = static_cast<ObjectInstance*>(newInstance);
@@ -178,8 +182,8 @@ void Workspace::Update()
 				{
 					object->PositionChanged = false;
 					std::cout << "theoretically updating the shader storage :shrug:" << std::endl;
-					const glm::vec3 position(obj->GetPosition());
-					m_ShaderStorageBuffer->UpdateBufferSection(&position, sizeof(glm::vec3), sizeof(glm::vec3) * obj->ObjectID);
+					const glm::vec4 position(obj->GetPosition(),1.0f);
+					m_ShaderStorageBuffer->UpdateBufferSection(&position, sizeof(glm::vec4), sizeof(glm::vec4) * obj->ObjectID);
 					GLAssertError();
 				}
 			}
@@ -193,6 +197,7 @@ void Workspace::Update()
 
 void Workspace::Render()
 {
+	GLAssertError();
 	glUseProgram(m_Program);
 	m_VertexArray.Bind();
 	m_IndexBuffer->Bind();
