@@ -1,7 +1,5 @@
 #include "VertexBuffer.h"
 
-#include "BugHuntingKit.h" // debug
-
 VertexBuffer::VertexBuffer(const void* data, unsigned int sizeInBytes, GLenum GLBufferMode) //DOES NOT UNBIND BUFFER FOR THE GPU CALL SAVING, IT SHOULD BE EASY TO WORK WITH THIS THOUGH
 {
 	glGenBuffers(1, &m_rendererID);
@@ -14,7 +12,6 @@ void VertexBuffer::SetBuffer(const void* data, unsigned int sizeInBytes, GLenum 
 {
 	glBindBuffer(GL_ARRAY_BUFFER, m_rendererID);
 	glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data, GLBufferMode);
-	GLAssertError();
 }
 
 void VertexBuffer::UpdateBufferSection(const void* data, unsigned int sizeInBytes, unsigned int offset) const //DOES NOT UNBIND BUFFER

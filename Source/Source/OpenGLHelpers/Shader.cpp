@@ -4,7 +4,6 @@
 #include <sstream>
 #include <iostream>
 
-#include "BugHuntingKit.h" //debug
 // VERTEX SHADER
 
 ShaderVertex::ShaderVertex(const std::string& t_shaderFilePath)
@@ -59,7 +58,6 @@ void ShaderVertex::compileShader(std::string shaderString)
 ShaderFragment::ShaderFragment(const std::string& t_shaderFilePath)
 	: shaderFilePath(t_shaderFilePath)
 {
-	GLAssertError();
 	if (!shaderFilePath.empty())
 	{
 		compileShader(parseShaderFile());
@@ -112,9 +110,7 @@ int ShaderUniformHelper::GetUniformLocation(const std::string& name)
 	{
 		return m_UniformLocationCache[name];
 	}
-	GLAssertError();
 	const int uniformLocation = glGetUniformLocation(m_BoundProgram, name.c_str());
-	GLAssertError();
 	if (uniformLocation == -1)
 	{
 		std::cout << "SHADER WARNING: UNIFORM \"" << name << "\" DOES NOT EXIST!" << std::endl;
@@ -126,35 +122,29 @@ int ShaderUniformHelper::GetUniformLocation(const std::string& name)
 void ShaderUniformHelper::BindProgram(unsigned int programToBind)
 {
 	m_BoundProgram = programToBind;
-	GLAssertError();
 }
 
 void ShaderUniformHelper::SetUniform1f(const std::string& name, float v0)
 {
 	glUniform1f(GetUniformLocation(name), v0);
-	GLAssertError();
 }
 
 void ShaderUniformHelper::SetUniform2f(const std::string& name, float v0, float v1)
 {
 	glUniform2f(GetUniformLocation(name), v0, v1);
-	GLAssertError();
 }
 
 void ShaderUniformHelper::SetUniform3f(const std::string& name, float v0, float v1, float v2)
 {
 	glUniform3f(GetUniformLocation(name), v0, v1, v2);
-	GLAssertError();
 }
 
 void ShaderUniformHelper::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
 {
 	glUniform4f(GetUniformLocation(name), v0, v1, v2, v3);
-	GLAssertError();
 }
 
 void ShaderUniformHelper::SetUniformMat4f(const std::string& name, const glm::mat4& matrix)
 {
 	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
-	GLAssertError();
 }

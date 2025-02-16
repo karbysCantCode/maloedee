@@ -94,6 +94,12 @@ int main(void)
     glm::vec3 cubeAPosition(0);
     glm::vec3 cubeBPosition(0);
 
+    glm::vec4 cubeAColor(1);
+    glm::vec4 cubeBColor(1);
+
+    cubeA->SetColor(cubeAColor);
+    cubeB->SetColor(cubeBColor);
+
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -107,12 +113,18 @@ int main(void)
             if (ImGui::SliderFloat3("Cube A", &cubeAPosition[0], -400.0f, 400.0f))
             {
                 cubeA->SetPosition(cubeAPosition);
-                std::cout << cubeA->ObjectID << ":ID CUBE A" << std::endl;
+            }
+            if (ImGui::ColorEdit4("Cube A", &cubeAColor[0]))
+            {
+                cubeA->SetColor(cubeAColor);
             }
             if (ImGui::SliderFloat3("Cube B", &cubeBPosition[0], -400.0f, 400.0f))
             {
                 cubeB->SetPosition(cubeBPosition);
-                std::cout << cubeB->ObjectID << ":ID CUBE B" << std::endl;
+            }
+            if (ImGui::ColorEdit4("Cube B", &cubeBColor[0]))
+            {
+                cubeB->SetColor(cubeBColor);
             }
         }
 

@@ -25,19 +25,27 @@ public:
 		std::vector<unsigned int>& vertexOrder;
 	};
 
+	struct Vertex
+	{
+		float Position[3];
+		float Normals[3];
+		uint32_t modelID;
+	};
+	static_assert(sizeof(long int) == sizeof(uint32_t));
+
 	ObjectInstance(bool& workspaceChanged, bool& workspaceRecompile, uint32_t objectID);
 	~ObjectInstance();
 
-	void SetVertexPositionData(const std::vector<float>& vertexPositions);
+	void SetVertexData(const std::vector<Vertex>& vertexSet);
 	void SetVertexOrderData(const std::vector<unsigned int>& vertexOrder);
 
-	inline void SetColor(const glm::vec4& color) { 
+	inline void SetColor(const glm::vec4& color) {  // MAY NOT BE GOOD IF CALLED ALOT
 		m_color = color; 
 		SSBOUpdate = true; 
 		p_workspaceChanged = true; 
 	};
 
-	inline void SetPosition(const glm::vec3& position) {
+	inline void SetPosition(const glm::vec3& position) { // MAY NOT BE GOOD IF CALLED ALOT
 		m_Position = position;
 		SSBOUpdate = true;
 		p_workspaceChanged = true;

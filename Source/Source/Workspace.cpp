@@ -27,7 +27,7 @@ Workspace::Workspace(const float ScreenWidth, const float ScreenHeight)
 	, m_Projection(glm::perspective(glm::radians(90.0f), ScreenWidth / ScreenHeight, 0.1f, 1000.0f))
 {
 	m_VertexBufferLayout.Push<float>(3); // position floats
-	//m_VertexBufferLayout.Push<float>(4); // color floats
+	m_VertexBufferLayout.Push<float>(3); // face normal floats
 	m_VertexBufferLayout.Push<float>(1); // model ID THE FUCKING EVIL LINE BRO WHY DOES IT CAST THE VALUE, I THOUGHT IT WOULD JUST TELL HOW TO INTERPRET
 	m_VertexArray.AddBuffer(*m_VertexBuffer, m_VertexBufferLayout);
 
@@ -59,7 +59,6 @@ Workspace::~Workspace()
 
 void Workspace::Recompile3DInstanceData() // recompile on gpu?
 {
-	std::cout << "recompiling" << std::endl;
 	m_VertexData.resize(0);
 	m_VertexOrder.resize(0);
 	const unsigned int objectCount = m_3DInstances.size();
@@ -67,7 +66,6 @@ void Workspace::Recompile3DInstanceData() // recompile on gpu?
 
 	for (unsigned int Index = 0; Index < objectCount; Index++) // do a loop to resize only once?
 	{
-		std::cout << "CURRENT INDEX:" << Index << std::endl;
 		Instance* instanceInstance = m_3DInstances[Index];
 		instanceInstance->Changed = false;
 		instanceInstance->SSBOUpdate = false;
@@ -109,14 +107,8 @@ void Workspace::Recompile3DInstanceData() // recompile on gpu?
 			objColor.a
 		};
 
-		for (int i = 0; i < 7; i++) {
-			std::cout << SSBO_DATA[i] << " ";
-		}
-		std::cout << std::endl;
-
 		std::memcpy(&m_SSBOData[Index* workspaceConst::FLOATS_IN_SSBO_ENTRY], SSBO_DATA, workspaceConst::FLOATS_IN_SSBO_ENTRY * sizeof(float));
 	}
-	SpillVectorContentsGently<float>(m_SSBOData, 7);
 	m_VertexBuffer->SetBuffer(m_VertexData.data(), m_VertexData.size() * (m_VertexBufferLayout.GetStride() / m_VertexBufferLayout.GetNumberOfIndividualElements()), GL_DYNAMIC_DRAW);
 	m_IndexBuffer->SetBuffer(m_VertexOrder.data(), m_VertexOrder.size(), GL_DYNAMIC_DRAW);
 	m_ShaderStorageBuffer->SetBuffer(m_SSBOData.data(), m_SSBOData.size() * sizeof(float), GL_DYNAMIC_DRAW);
@@ -133,37 +125,8 @@ Instance* Workspace::NewInstance(Instance::InstanceType instanceType) // thiss l
 	{
 		newInstance = new ObjectInstance(m_ObjectChanged, m_RecompileObjectData, m_NextFree3DObjectID);
 		m_3DInstances.push_back(newInstance);
-		std::cout << "next free id: " << m_NextFree3DObjectID << std::endl;
 		m_NextFree3DObjectID++;
 		m_RecompileObjectData = true;
-
-		//ObjectInstance* object = static_cast<ObjectInstance*>(newInstance);
-		//object->ObjectID = m_3DInstances.size();
-		//
-		//m_3DInstances.push_back(static_cast<ObjectInstance*>(newInstance));
-		//
-		//m_ObjectIDFirstDataEntry[object->ObjectID] = m_VertexData.size();
-		//m_ObjectIDFirstOrderEntry[object->ObjectID] = m_VertexOrder.size();
-		//
-		//// adding new vertex data
-		//
-		//ObjectInstance::VertexDataOrderPair newObjectData = object->GetObjectData();
-		//m_VertexData.resize(m_VertexData.size() + newObjectData.vertexData.size());
-		//
-		//m_VertexData.insert(m_VertexData.end()
-		//	, newObjectData.vertexData.begin(), newObjectData.vertexData.end());
-		//
-		//// adding new order data
-		//
-		//const unsigned int VERTEX_ORDER_ARRAY_SIZE = m_VertexOrder.size(); // apply offset on gpu for large assets?
-		//
-		//std::transform(newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end(), newObjectData.vertexOrder.begin(),
-		//	[VERTEX_ORDER_ARRAY_SIZE](int x) { return x + VERTEX_ORDER_ARRAY_SIZE; });
-		//
-		//m_VertexOrder.insert(m_VertexOrder.end()
-		//	, newObjectData.vertexOrder.begin(), newObjectData.vertexOrder.end());
-		//
-		// dont think i need the above? it does the same operations on cpu arrays as recompiling does, but it doesnt write to buffers, so recompiling would work better?
 	}
 	break;
 
@@ -190,20 +153,17 @@ void Workspace::Update()
 {
 	if (m_RecompileObjectData)
 	{
-		std::cout << "recompile" << std::endl;
 		m_RecompileObjectData = false;
 		Recompile3DInstanceData();
 	}
 	else if (m_ObjectChanged)
 	{
-		std::cout << "obj update" << std::endl;
 		m_ObjectChanged = false;
 		for (const auto& object : m_3DInstances)
 		{
 			if (typeid(*object) == typeid(ObjectInstance))
 			{
 				ObjectInstance* obj = static_cast<ObjectInstance*>(object);
-				std::cout << obj->Changed << std::endl;
 				if (obj->Changed) 
 				{
 					obj->Changed = false;
@@ -223,7 +183,6 @@ void Workspace::Update()
 				if (obj->SSBOUpdate)
 				{
 					obj->SSBOUpdate = false;
-					std::cout << "theoretically updating the shader storage :shrug:" << std::endl;
 					const glm::vec3 objPosition = obj->GetPosition();
 					const glm::vec4 objColor = obj->GetColor();
 
@@ -241,7 +200,6 @@ void Workspace::Update()
 
 					constexpr unsigned int SSBO_ENTRY_IN_BYTES = workspaceConst::FLOATS_IN_SSBO_ENTRY * sizeof(float);
 					m_ShaderStorageBuffer->UpdateBufferSection(&SSBO_DATA, SSBO_ENTRY_IN_BYTES, SSBO_ENTRY_IN_BYTES * obj->ObjectID);
-					GLAssertError();
 				}
 			}
 			else
@@ -254,7 +212,6 @@ void Workspace::Update()
 
 void Workspace::Render()
 {
-	GLAssertError();
 	glUseProgram(m_Program);
 	m_VertexArray.Bind();
 	m_IndexBuffer->Bind();
