@@ -11,7 +11,10 @@ public:
 	unsigned int shaderID = 0;
 
 	ShaderVertex(const std::string& t_shaderFilePath);
+	ShaderVertex() {}
 	~ShaderVertex();
+
+	void setFilePath(const std::string& t_shaderFilePath);
 
 	std::string parseShaderFile() const;
 	void compileShader(std::string shaderString);
@@ -25,7 +28,10 @@ public:
 
 
 	ShaderFragment(const std::string& t_shaderFilePath);
+	ShaderFragment() {}
 	~ShaderFragment();
+
+	void setFilePath(const std::string& t_shaderFilePath);
 
 	std::string parseShaderFile() const;
 	void compileShader(std::string shaderString);

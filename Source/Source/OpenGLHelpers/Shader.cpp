@@ -12,12 +12,17 @@ ShaderVertex::ShaderVertex(const std::string& t_shaderFilePath)
 	if (!shaderFilePath.empty())
 	{
 		compileShader(parseShaderFile());
-	}
+	} // change so stuff is set set yeah yeah!
 }
 
 ShaderVertex::~ShaderVertex()
 {
 	glDeleteShader(shaderID);
+}
+
+void ShaderVertex::setFilePath(const std::string& t_shaderFilePath)
+{
+	shaderFilePath = t_shaderFilePath;
 }
 
 std::string ShaderVertex::parseShaderFile() const 
@@ -83,6 +88,11 @@ std::string ShaderFragment::parseShaderFile() const
 	return ss.str();
 }
 
+void ShaderFragment::setFilePath(const std::string& t_shaderFilePath)
+{
+	shaderFilePath = t_shaderFilePath;
+}
+
 void ShaderFragment::compileShader(std::string shaderString)
 {
 	shaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -121,6 +131,7 @@ int ShaderUniformHelper::GetUniformLocation(const std::string& name)
 
 void ShaderUniformHelper::BindProgram(unsigned int programToBind)
 {
+	m_UniformLocationCache.clear();
 	m_BoundProgram = programToBind;
 }
 

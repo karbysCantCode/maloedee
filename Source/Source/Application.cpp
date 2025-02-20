@@ -84,11 +84,11 @@ int main(void)
     };
 
     ObjectInstance* cubeA = static_cast<ObjectInstance*>(workspace.NewInstance(Instance::InstanceType::OBJECT));
-    cubeA->SetVertexPositionData(cubeVertices);
+    //cubeA->SetVertexPositionData(cubeVertices);
     cubeA->SetVertexOrderData(cubeOrder);
 
     ObjectInstance* cubeB = static_cast<ObjectInstance*>(workspace.NewInstance(Instance::InstanceType::OBJECT));
-    cubeB->SetVertexPositionData(cubeVertices);
+    //cubeB->SetVertexPositionData(cubeVertices);
     cubeB->SetVertexOrderData(cubeOrder);
 
     glm::vec3 cubeAPosition(0);
