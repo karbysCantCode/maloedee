@@ -39,7 +39,7 @@ private:
 	ShaderFragment m_FragmentShader;
 	ShaderVertex m_VertexShader;
 	ShaderUniformHelper m_UniformHelper;
-	ShaderStorageBuffer* shaderStorageBuffer = nullptr;
+	ShaderStorageBuffer* m_ShaderStorageBuffer = nullptr;
 
 	glm::mat4 m_Projection;
 

@@ -1,13 +1,16 @@
 #include "RenderGroup.h"
 
-
+constexpr unsigned int FLOATS_IN_POSITION = 3;
+constexpr unsigned int FLOATS_IN_COLOR = 4;
+constexpr unsigned int FLOATS_IN_SSBO_ENTRY = FLOATS_IN_POSITION + FLOATS_IN_COLOR;
 
 void RenderGroup::Recompile3DInstanceData()
 {
+
 	m_VertexData.resize(0);
 	m_VertexOrder.resize(0);
 	const unsigned int objectCount = m_3DInstances.size();
-	m_SSBOData.resize(shaderStorageBuffer->GetStride() * objectCount);
+	m_SSBOData.resize((FLOATS_IN_POSITION + FLOATS_IN_COLOR) * objectCount);
 
 	for (unsigned int Index = 0; Index < objectCount; Index++) // do a loop to resize only once?
 	{
@@ -39,8 +42,8 @@ void RenderGroup::Recompile3DInstanceData()
 
 		const glm::vec3 objPosition = objInstance->GetPosition();
 		const glm::vec4 objColor = objInstance->GetColor();
-		static_assert(false); // continue changing stuff uhmmm yeah
-		std::vector<float> tempData =
+
+		float tempData[FLOATS_IN_SSBO_ENTRY] =
 		{
 			objPosition.x,
 			objPosition.y,
@@ -51,11 +54,11 @@ void RenderGroup::Recompile3DInstanceData()
 			objColor.a
 		};
 
-		std::memcpy(&m_SSBOData[Index * shaderStorageBuffer->GetStride()], SSBO_DATA, shaderStorageBuffer->GetStride() * sizeof(float));
+		std::memcpy(&m_SSBOData[Index * FLOATS_IN_SSBO_ENTRY], SSBO_DATA, FLOATS_IN_SSBO_ENTRY * sizeof(float));
 	}
 	m_VertexBuffer->SetBuffer(m_VertexData.data(), m_VertexData.size() * (vertexBufferLayout.GetStride() / vertexBufferLayout.GetNumberOfIndividualElements()), GL_DYNAMIC_DRAW);
 	m_IndexBuffer->SetBuffer(m_VertexOrder.data(), m_VertexOrder.size(), GL_DYNAMIC_DRAW);
-	shaderStorageBuffer->SetBuffer(m_SSBOData.data(), m_SSBOData.size() * sizeof(float), GL_DYNAMIC_DRAW);
+	m_ShaderStorageBuffer->SetBuffer(m_SSBOData.data(), m_SSBOData.size() * sizeof(float), GL_DYNAMIC_DRAW);
 }
 
 void RenderGroup::RecompileProgram()
@@ -91,7 +94,7 @@ RenderGroup::RenderGroup(const float ScreenWidth, const float ScreenHeight, cons
 	, m_VertexBuffer(new VertexBuffer(nullptr, 0, GL_DYNAMIC_DRAW))
 
 	, m_Program(glCreateProgram())
-	, shaderStorageBuffer(new ShaderStorageBuffer(nullptr, 0, 0, GL_DYNAMIC_DRAW))
+	, m_ShaderStorageBuffer(new ShaderStorageBuffer(nullptr, 0, 0, GL_DYNAMIC_DRAW))
 
 	, m_Projection(glm::perspective(glm::radians(FOV), ScreenWidth / ScreenHeight, 0.1f, 1000.0f))
 {
@@ -99,6 +102,9 @@ RenderGroup::RenderGroup(const float ScreenWidth, const float ScreenHeight, cons
 	vertexBufferLayout.Push<float>(3); // face normal floats
 	vertexBufferLayout.Push<float>(1); // model ID THE FUCKING EVIL LINE BRO WHY DOES IT CAST THE VALUE, I THOUGHT IT WOULD JUST TELL HOW TO INTERPRET
 	m_VertexArray.AddBuffer(*m_VertexBuffer, vertexBufferLayout);
+
+	m_ShaderStorageBuffer->Push<float>(3);
+	m_ShaderStorageBuffer->Push<float>(4);
 
 	m_UniformHelper.BindProgram(m_Program);
 	m_UniformHelper.SetUniformMat4f("u_Projection", m_Projection);
@@ -112,9 +118,9 @@ RenderGroup::~RenderGroup()
 {
 	delete m_IndexBuffer;
 	delete m_VertexBuffer;
-	delete shaderStorageBuffer;
+	delete m_ShaderStorageBuffer;
 }
-
+//maybe delete this function
 void RenderGroup::UpdateVertexArray()
 {
 	m_VertexArray.AddBuffer(*m_VertexBuffer, vertexBufferLayout);
@@ -191,7 +197,7 @@ void RenderGroup::Update()
 					const glm::vec3 objPosition = obj->GetPosition();
 					const glm::vec4 objColor = obj->GetColor();
 
-					const float SSBO_DATA[shaderStorageBuffer->GetStride()] =
+					const float SSBO_DATA[FLOATS_IN_SSBO_ENTRY] =
 					{
 						objPosition.x,
 						objPosition.y,
@@ -203,7 +209,7 @@ void RenderGroup::Update()
 						objColor.a
 					};
 
-					constexpr unsigned int SSBO_ENTRY_IN_BYTES = shaderStorageBuffer->GetStride() * sizeof(float);
+					constexpr unsigned int SSBO_ENTRY_IN_BYTES = FLOATS_IN_SSBO_ENTRY * sizeof(float);
 					shaderStorageBuffer->UpdateBufferSection(&SSBO_DATA, SSBO_ENTRY_IN_BYTES, SSBO_ENTRY_IN_BYTES * obj->ObjectID);
 				}
 			}
